@@ -11,20 +11,24 @@ A harness for running pytest. It handles the collection and upload of test resul
 
 ## JSONL Schema
 
-Each test produces one line:
+Each test produces one line. The schema mirrors `pytest.TestReport` fields:
 
 ```json
-{"node_id":"tests/test_a.py::test_ok","outcome":"passed","duration_seconds":0.005,"timestamp":"2026-01-01T00:00:00+00:00","longrepr":null,"worker":null}
+{"nodeid":"tests/test_a.py::test_ok","outcome":"passed","when":"call","duration":0.005,"start":1735689600.0,"stop":1735689600.005,"location":["tests/test_a.py",0,"test_ok"],"longrepr":null,"sections":null,"wasxfail":null}
 ```
 
-| Field              | Type             | Description                                      |
-|--------------------|------------------|--------------------------------------------------|
-| `node_id`          | `string`         | Pytest node ID                                   |
-| `outcome`          | `string`         | `passed`, `failed`, `skipped`, `error`, `xfailed`, `xpassed` |
-| `duration_seconds` | `float`          | Test duration in seconds                         |
-| `timestamp`        | `string`         | ISO 8601 timestamp (UTC)                         |
-| `longrepr`         | `string \| null` | Failure representation, null on pass             |
-| `worker`           | `string \| null` | Reserved for future xdist support                |
+| Field      | Type                          | Description                                                      |
+|------------|-------------------------------|------------------------------------------------------------------|
+| `nodeid`   | `string`                      | Pytest node ID                                                   |
+| `outcome`  | `string`                      | `passed`, `failed`, `skipped`, `error`, `xfailed`, `xpassed`    |
+| `when`     | `string`                      | Phase: `setup`, `call`, or `teardown`                            |
+| `duration` | `float`                       | Test duration in seconds                                         |
+| `start`    | `float`                       | Epoch timestamp when the phase started                           |
+| `stop`     | `float`                       | Epoch timestamp when the phase ended                             |
+| `location` | `[string, int\|null, string]` | `[filepath, lineno, domain]`, or null                            |
+| `longrepr` | `string \| null`              | Failure representation, null on pass                             |
+| `sections` | `[[string, string]] \| null`  | Captured output sections, e.g. `[["Captured stdout call", "..."]]` |
+| `wasxfail` | `string \| null`              | xfail reason if the test was marked xfail                        |
 
 ## Adding a Backend
 

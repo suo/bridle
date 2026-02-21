@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
 
@@ -71,10 +70,15 @@ class TestResultPlugin:
             longrepr = str(report.longrepr) if report.longrepr else None
 
         result = TestResult(
-            node_id=report.nodeid,
+            nodeid=report.nodeid,
             outcome=outcome,
-            duration_seconds=round(report.duration, 6),
-            timestamp=datetime.now(timezone.utc),
+            when=report.when,
+            duration=round(report.duration, 6),
+            start=report.start,
+            stop=report.stop,
+            location=report.location,
             longrepr=longrepr,
+            sections=report.sections if report.sections else None,
+            wasxfail=getattr(report, "wasxfail", None),
         )
         self._write(result)

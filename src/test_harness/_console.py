@@ -24,7 +24,7 @@ def _make_summary_table(results: list[TestResult]) -> Table:
     total_duration = 0.0
     for r in results:
         counts[r.outcome] = counts.get(r.outcome, 0) + 1
-        total_duration += r.duration_seconds
+        total_duration += r.duration
 
     table = Table(title="Test Results Summary", show_edge=False)
     table.add_column("Outcome", style="bold")
@@ -57,7 +57,7 @@ def _make_failure_panels(results: list[TestResult]) -> list[Panel]:
         panels.append(
             Panel(
                 r.longrepr or "",
-                title=f"[red bold]{r.node_id}[/red bold]",
+                title=f"[red bold]{r.nodeid}[/red bold]",
                 border_style="red",
                 expand=True,
             )

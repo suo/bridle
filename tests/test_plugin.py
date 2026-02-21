@@ -38,7 +38,12 @@ def test_ok():
         assert len(lines) == 1
         data = json.loads(lines[0])
         assert data["outcome"] == "passed"
-        assert "test_ok" in data["node_id"]
+        assert "test_ok" in data["nodeid"]
+        assert data["when"] == "call"
+        assert isinstance(data["start"], float)
+        assert isinstance(data["stop"], float)
+        assert isinstance(data["duration"], float)
+        assert data["location"] is not None
 
     def test_failed_test_recorded(self, harness_pytester: pytest.Pytester) -> None:
         harness_pytester.makepyfile(
@@ -94,6 +99,7 @@ def test_expected_failure():
         assert len(lines) == 1
         data = json.loads(lines[0])
         assert data["outcome"] == "xfailed"
+        assert data["wasxfail"] is not None
 
     def test_multiple_tests(self, harness_pytester: pytest.Pytester) -> None:
         harness_pytester.makepyfile(
@@ -141,4 +147,5 @@ def test_with_bad_fixture(bad_fixture):
         assert len(lines) == 1
         data = json.loads(lines[0])
         assert data["outcome"] == "error"
+        assert data["when"] == "setup"
         assert "setup boom" in data["longrepr"]

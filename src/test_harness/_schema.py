@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Self
@@ -22,21 +21,31 @@ class Outcome(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class TestResult:
-    node_id: str
+    nodeid: str
     outcome: Outcome
-    duration_seconds: float
-    timestamp: datetime
+    when: str
+    duration: float
+    start: float
+    stop: float
+    location: tuple[str, int | None, str] | None = None
     longrepr: str | None = None
-    worker: str | None = None
+    sections: list[tuple[str, str]] | None = None
+    wasxfail: str | None = None
 
     def to_dict(self) -> dict:
         return {
-            "node_id": self.node_id,
+            "nodeid": self.nodeid,
             "outcome": self.outcome.value,
-            "duration_seconds": self.duration_seconds,
-            "timestamp": self.timestamp.isoformat(),
+            "when": self.when,
+            "duration": self.duration,
+            "start": self.start,
+            "stop": self.stop,
+            "location": list(self.location) if self.location is not None else None,
             "longrepr": self.longrepr,
-            "worker": self.worker,
+            "sections": [list(s) for s in self.sections]
+            if self.sections is not None
+            else None,
+            "wasxfail": self.wasxfail,
         }
 
     def to_json_line(self) -> str:
@@ -44,13 +53,23 @@ class TestResult:
 
     @classmethod
     def from_dict(cls, data: dict) -> Self:
+        location = data.get("location")
+        if location is not None:
+            location = (location[0], location[1], location[2])
+        sections = data.get("sections")
+        if sections is not None:
+            sections = [(s[0], s[1]) for s in sections]
         return cls(
-            node_id=data["node_id"],
+            nodeid=data["nodeid"],
             outcome=Outcome(data["outcome"]),
-            duration_seconds=data["duration_seconds"],
-            timestamp=datetime.fromisoformat(data["timestamp"]),
+            when=data["when"],
+            duration=data["duration"],
+            start=data["start"],
+            stop=data["stop"],
+            location=location,
             longrepr=data.get("longrepr"),
-            worker=data.get("worker"),
+            sections=sections,
+            wasxfail=data.get("wasxfail"),
         )
 
     @classmethod

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from test_harness._schema import Outcome, TestResult, read_results
 
-FIXED_TS = datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+from conftest import FIXED_START, FIXED_STOP
 
 
 class TestTestResult:
@@ -26,22 +25,30 @@ class TestTestResult:
 
     def test_to_dict_keys(self) -> None:
         result = TestResult(
-            node_id="t::x",
+            nodeid="t::x",
             outcome=Outcome.PASSED,
-            duration_seconds=0.0,
-            timestamp=FIXED_TS,
+            when="call",
+            duration=0.0,
+            start=FIXED_START,
+            stop=FIXED_STOP,
         )
         d = result.to_dict()
         assert set(d.keys()) == {
-            "node_id",
+            "nodeid",
             "outcome",
-            "duration_seconds",
-            "timestamp",
+            "when",
+            "duration",
+            "start",
+            "stop",
+            "location",
             "longrepr",
-            "worker",
+            "sections",
+            "wasxfail",
         }
         assert d["longrepr"] is None
-        assert d["worker"] is None
+        assert d["location"] is None
+        assert d["sections"] is None
+        assert d["wasxfail"] is None
 
     def test_outcome_values(self) -> None:
         assert Outcome.PASSED.value == "passed"
@@ -52,10 +59,12 @@ class TestReadResults:
     def test_reads_valid_jsonl(self, tmp_path) -> None:
         f = tmp_path / "results.jsonl"
         r = TestResult(
-            node_id="t::a",
+            nodeid="t::a",
             outcome=Outcome.PASSED,
-            duration_seconds=0.001,
-            timestamp=FIXED_TS,
+            when="call",
+            duration=0.001,
+            start=FIXED_START,
+            stop=FIXED_STOP,
         )
         f.write_text(r.to_json_line() + "\n")
         results = read_results(f)
@@ -65,10 +74,12 @@ class TestReadResults:
     def test_skips_malformed_lines(self, tmp_path) -> None:
         f = tmp_path / "results.jsonl"
         r = TestResult(
-            node_id="t::a",
+            nodeid="t::a",
             outcome=Outcome.PASSED,
-            duration_seconds=0.001,
-            timestamp=FIXED_TS,
+            when="call",
+            duration=0.001,
+            start=FIXED_START,
+            stop=FIXED_STOP,
         )
         content = r.to_json_line() + "\n" + "NOT JSON\n" + '{"truncated": true}\n'
         f.write_text(content)

@@ -1,37 +1,42 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import pytest
 
 from test_harness._schema import Outcome, TestResult
 
 pytest_plugins = ["pytester"]
 
-# Deterministic timestamp for snapshot tests.
-FIXED_TS = datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+# Deterministic epoch timestamps for snapshot tests.
+FIXED_START = 1735689600.0  # 2025-01-01T00:00:00 UTC
+FIXED_STOP = 1735689600.005  # 5ms later
 
 
 @pytest.fixture()
 def sample_results() -> list[TestResult]:
     return [
         TestResult(
-            node_id="tests/test_a.py::test_ok",
+            nodeid="tests/test_a.py::test_ok",
             outcome=Outcome.PASSED,
-            duration_seconds=0.005,
-            timestamp=FIXED_TS,
+            when="call",
+            duration=0.005,
+            start=FIXED_START,
+            stop=FIXED_STOP,
         ),
         TestResult(
-            node_id="tests/test_a.py::test_fail",
+            nodeid="tests/test_a.py::test_fail",
             outcome=Outcome.FAILED,
-            duration_seconds=0.123,
-            timestamp=FIXED_TS,
+            when="call",
+            duration=0.123,
+            start=FIXED_START,
+            stop=FIXED_START + 0.123,
             longrepr="assert 1 == 2",
         ),
         TestResult(
-            node_id="tests/test_a.py::test_skip",
+            nodeid="tests/test_a.py::test_skip",
             outcome=Outcome.SKIPPED,
-            duration_seconds=0.0,
-            timestamp=FIXED_TS,
+            when="setup",
+            duration=0.0,
+            start=FIXED_START,
+            stop=FIXED_START,
         ),
     ]
