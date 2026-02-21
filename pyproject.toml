@@ -7,10 +7,21 @@ authors = [
     { name = "Michael Suo", email = "suo@meta.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pytest>=8.0",
+    "rich>=13.0",
+]
+
+[project.entry-points.pytest11]
+test_harness = "test_harness._plugin"
 
 [project.scripts]
 test-harness = "test_harness:main"
+
+[dependency-groups]
+dev = [
+    "syrupy>=4.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.16,<0.10.0"]
