@@ -1,44 +1,13 @@
 # test-harness
 
-A crash-resilient pytest subprocess harness that collects structured test results as JSONL and uploads them to pluggable backends. Designed for CI, with rich formatted output and exit code passthrough.
+A harness for running pytest. It handles the collection and upload of test result information in a way that is resilient to crashes/OOMs in the code under test.
 
 ## Features
 
 - **Crash resilience** — pytest runs in a subprocess; results are flushed to disk after every test. Even if the subprocess segfaults or OOMs, the harness reads whatever was written.
-- **Structured JSONL output** — one JSON object per test with node ID, outcome, duration, timestamp, and failure details.
-- **Pluggable backends** — results are dispatched to a backend for upload. Ships with a `stub` backend; add your own by subclassing `Backend`.
+- **Pluggable backends** — can register one or more backends to upload test results to.
 - **Rich console output** — summary table with outcome counts and duration, plus detailed failure panels, all printed to stderr.
 - **Exit code passthrough** — the harness returns the subprocess exit code so CI can gate on it.
-
-## Installation
-
-Requires Python 3.13+.
-
-```
-uv sync
-```
-
-## Usage
-
-```
-test-harness <pytest args> [--backend <name>]
-```
-
-All arguments except `--backend` are forwarded to pytest:
-
-```
-# Run tests in a directory
-test-harness tests/
-
-# Run with a specific backend
-test-harness tests/ --backend stub
-
-# Pass pytest flags through
-test-harness tests/ -k "test_login" -x --tb=short
-
-# Via python -m
-python -m test_harness tests/ --backend stub
-```
 
 ## JSONL Schema
 
