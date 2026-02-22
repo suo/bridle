@@ -176,6 +176,36 @@ def test_after():
         # test_after never ran
         assert "test_after" not in by_name
 
+    def test_segfault_recorded(self, harness_pytester: pytest.Pytester) -> None:
+        """A test that segfaults is recorded as failed via unmatched TestStarted."""
+        harness_pytester.makepyfile(
+            """
+import signal
+import os
+
+def test_before():
+    pass
+
+def test_segfault():
+    os.kill(os.getpid(), signal.SIGSEGV)
+
+def test_after():
+    pass
+"""
+        )
+        harness_pytester.runpytest_subprocess()
+
+        results = _resolved_results(harness_pytester)
+        by_name = {r.nodeid.split("::")[-1]: r for r in results}
+
+        assert by_name["test_before"].outcome == Outcome.PASSED
+
+        assert "test_segfault" in by_name
+        assert by_name["test_segfault"].outcome == Outcome.FAILED
+        assert by_name["test_segfault"].longrepr == "Test crashed (no result received)"
+
+        assert "test_after" not in by_name
+
     def test_raw_events_contain_both_types(self, harness_pytester: pytest.Pytester) -> None:
         """Verify the JSONL file contains both TestStarted and TestFinished events."""
         harness_pytester.makepyfile(
