@@ -66,6 +66,35 @@ uv run test-harness tests/ --test-timeout-sec 30 --total-timeout-sec 120
 
 When a timeout fires, the subprocess is killed and `TestFinished` events are written for all active tests with a timeout-specific `longrepr`. Downstream code (display, backends) sees them as normal failed tests.
 
+## Buildkite Test Analytics
+
+The `buildkite` backend uploads test results to [Buildkite Test Analytics](https://buildkite.com/docs/test-analytics) for flaky test detection, suite analytics, and performance tracking.
+
+### Setup
+
+Set the `BUILDKITE_ANALYTICS_TOKEN` environment variable to your Buildkite Test Analytics suite API token:
+
+```bash
+export BUILDKITE_ANALYTICS_TOKEN="your-suite-token"
+uv run test-harness tests/ --backend buildkite
+```
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `BUILDKITE_ANALYTICS_TOKEN` | Yes | Suite API token for authentication |
+| `BUILDKITE_ANALYTICS_API_URL` | No | Custom API endpoint (defaults to `https://analytics-api.buildkite.com/v1/uploads`) |
+
+The backend automatically detects CI environment (Buildkite, GitHub Actions, CircleCI) from standard CI env vars. If no CI provider is detected, it falls back to a generic environment.
+
+### Behavior
+
+- Upload is best-effort: HTTP/network errors are logged as warnings, never propagated.
+- If `BUILDKITE_ANALYTICS_TOKEN` is not set, a warning is logged and upload is skipped.
+- Test results are uploaded in batches of 100.
+- Crash events (unmatched `TestStarted`) are reported as failed tests.
+
 ## Adding a Backend
 
 Subclass `Backend` and register it in `backends/__init__.py`:
@@ -120,5 +149,6 @@ src/test_harness/
 └── backends/
     ├── __init__.py      # Registry + get_backend()
     ├── _base.py         # Abstract Backend base class
+    ├── _buildkite.py    # BuildkiteBackend (Buildkite Test Analytics)
     └── _stub.py         # StubBackend (logs to console)
 ```
