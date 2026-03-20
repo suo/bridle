@@ -83,7 +83,7 @@ def _convert_event(event: TestFinished) -> dict:
     if result == "failed":
         entry["failure_reason"] = event.longrepr or ""
         if event.longrepr:
-            entry["failure_expanded"] = [{"expanded": event.longrepr}]
+            entry["failure_expanded"] = [{"expanded": event.longrepr.split("\n")}]
 
     return entry
 
