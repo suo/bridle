@@ -163,7 +163,7 @@ class TestConvertEvent:
         result = _convert_event(event)
         assert result["result"] == "failed"
         assert result["failure_reason"] == "assert 1 == 2"
-        assert result["failure_expanded"] == [{"expanded": "assert 1 == 2"}]
+        assert result["failure_expanded"] == [{"expanded": ["assert 1 == 2"]}]
 
     def test_location_without_lineno(self) -> None:
         event = TestFinished(
