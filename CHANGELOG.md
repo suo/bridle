@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- Fix Buildkite Test Engine not recording failed tests: `failure_expanded[].expanded` must be a list of strings (one per line), not a single string. The API accepts both formats (HTTP 202) but silently drops records with the wrong type.
+
 ## 0.6.0
 
 - Add `MSLCI_EXCLUDE_FIELDS` env var to drop configurable fields (e.g. `longrepr`, `sections`, `wasxfail`) from MSLCI upload payload, preventing HTTP 413 errors for large test outputs
